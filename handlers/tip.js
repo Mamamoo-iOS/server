@@ -164,6 +164,7 @@ exports.read = function(req, res) {
         _findNearTip(req, command, function (resultsWithStats) {
             var nearTips = [];
             var tipIds = [];
+            var userInfo = {};
 
             resultsWithStats = JSON.parse(resultsWithStats);
 
@@ -189,38 +190,73 @@ exports.read = function(req, res) {
                     }
                 ], function (err, results) {
                     tipIds.push(results[0]);
-                    console.log("tipIds uid: " + results[0]._id + " | " +  results[0].nickname);
+                    //console.log("tipIds id: " + results[0]._id + " | " +  results[0].nickname);
+
+                    var userid = results[0]._id;
+                    userInfo[userid] = {"nickname" : results[0].nickname, "profilephoto" : results[0].profilephoto};
 
                     var index = tipIds.length - 1;
 
-                    if (index >= 0) {
-                        var targetTip =  nearTips[index];
-                        targetTip.nickname = tipIds[index].nickname;
-                        targetTip.profilephoto = tipIds[index].profilephoto;
-                        targetTip.dis =  Math.floor(targetTip.dis / mToMile);
+                    //if (index >= 0) {
+                    //    var targetTip =  nearTips[index];
+                    //
+                    //    var targetUser = userInfo[targetTip.uid];
+                    //    targetTip.nickname = targetUser.nickname;
+                    //    targetTip.profilephoto = targetUser.profilephoto;
+                    //
+                    //    targetTip.dis =  Math.floor(targetTip.dis / mToMile);
+                    //
+                    //    var like = targetTip.like;
+                    //
+                    //    if (like == null) {
+                    //        targetTip.like = 0;
+                    //        targetTip.isliked = false;
+                    //
+                    //    } else {
+                    //        var isLiked = false;
+                    //        for (var i = 0; i < like.length; i++) {
+                    //            //console.log("uid: " + like[i]);
+                    //            if (like[i] == sid) {
+                    //                isLiked = true;
+                    //                break;
+                    //            }
+                    //        }
+                    //        targetTip.like = like.length;
+                    //        targetTip.isliked = isLiked;
+                    //    }
+                    //} else (res.json(err));
 
-                        var like = targetTip.like;
+                    if (tipIds.length == nearTips.length) {
 
-                        if (like == null) {
-                            targetTip.like = 0;
-                            targetTip.isliked = false;
+                        for (var index = 0; index < tipIds.length; index++) {
+                            var targetTip = nearTips[index];
+                            var targetUser = userInfo[targetTip.uid];
+                            targetTip.nickname = targetUser.nickname;
+                            targetTip.profilephoto = targetUser.profilephoto;
 
-                        } else {
-                            var isLiked = false;
-                            for (var i = 0; i < like.length; i++) {
-                                //console.log("uid: " + like[i]);
-                                if (like[i] == sid) {
-                                    isLiked = true;
-                                    break;
+                            targetTip.dis = Math.floor(targetTip.dis / mToMile);
+
+                            var like = targetTip.like;
+
+                            if (like == null) {
+                                targetTip.like = 0;
+                                targetTip.isliked = false;
+
+                            } else {
+                                var isLiked = false;
+                                for (var i = 0; i < like.length; i++) {
+                                    //console.log("uid: " + like[i]);
+                                    if (like[i] == sid) {
+                                        isLiked = true;
+                                        break;
+                                    }
                                 }
+                                targetTip.like = like.length;
+                                targetTip.isliked = isLiked;
                             }
-                            targetTip.like = like.length;
-                            targetTip.isliked = isLiked;
                         }
-                    } else (res.json(err));
 
-                    if (index == nearTips.length - 1) {
-                        res.json(nearTips);
+                        if (index == nearTips.length) res.json(nearTips);
                     }
                 });
             }
